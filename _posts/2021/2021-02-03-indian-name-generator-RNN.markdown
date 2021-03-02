@@ -1,49 +1,109 @@
 ---
 layout: post
-title: 'Exponentially Weighted Moving Averages - Deep Learning'
-date: '2021-01-2 22:31'
+title: 'Character level - RNN - Model - Indian Names Generator'
+date: '2021-02-13 02:45'
 excerpt: >-
-  This article is about EWMA, that focuses on the trends within a dataset 
-  by establishing the weights or magnitudes that vary depending on how recent the values are
+  This is a demonstration of character level - recurrent neural networks. In this project we have trained the newural network with a dataset of Indian names and generated a new set of names.
 comments: true
 ---
 
-To observe the trends within a dataset, we can perform a squared average or simple average. Instead, let say there is a situation where you need to prioritize a few data points over the rest. Like in predicting the temperature requires us to prioritize the latest values. Exponentially Weighted Moving Averages (EWMA) helps us in solving problems like this.
+# CharacterLevel-RNN-Model-Indian Names
 
-EWMA weighs the `latest` or `recent` data points with `higher weights` or `magnitude` than the rest of the data points as an exponential function. The graph below is a plot of temperatures in New Jersey throughout the year.
 
-![Temperature Variations in NJ](/img/TemperatureGrpah.png)
+# ProblemStatement
 
-As mentioned earlier one way to identify the trend among these noisy data points would be simple averages. So what is the problem with that approach? Well, you can see that a simple average would consider all the data points with equal significance.
+      Given a set of Indian names create new names using character-level recurrent neural network.
 
-For instance, in this scenario consider the temperatures at Feb 2020 and August 2020. There is a lot of difference and the current day's temperature depends more on say last 10 days than on the temperature three months ago.
+# Step 01 - Processing the data
 
-# How to calculate the moving averages?
+   * In this step we shall read the input words - Indian names as each setence with '\n' char at the end of each name we also create our vocabulary characters list
 
-This problem of all data points with the same weight is solved by E.W.M.A, where we have a hyperparameter β also called a smoothing parameter as it helps to reduce the noise in data.
+   * We need to maintain two hashtable char_to-index and index_to_char each of these are mappings of characters in vocabulary to an index and viceversa
+   
+# Step 02 - Building the model
 
-![Moving](/img/MovingAvg.png)
+Building the model include the following:
 
-The θ values are the temperatures, the image shows the calculation of moving averages V where (β < 1). The magnitude of θ is 1- β and V is β. So, when β = 0.9, that means we are trying to average among 10 (1/(1-β)) recent V values.
+    a) Training the model
+    
+    b) Optimizing:
+    
+        b.1) Forward Prop
+        b.2) Backward Prop
+        b.3) Gradient Clipping
+        b.4) Parameters updation
+        
+    c) Performing sampling -> to ensure the training.
 
-![Calculations](/img/StepByStep.png)
 
-Now, when β = 0.9 and t = 50, the above calculations show how the magnitude of θ penalizes. From this calculation we can say two things:
+## 2.1 - Gradient Clipping
 
-  * The magnitude of θ rises depending on how recent the data point is.
-  
-  * The decrease of this magnitude is exponential.
+Gradient clipping is performed to avoid the exploding gradients problem, in which the gradients suffer from having extremely high values.
 
-![gifImg](/img/Mving-Avgs.gif)
+Hence, given a range [-n, n] check if the value is within the range if:
 
-The trends of temperature for different values of β are shown above, we can draw the following observations:
+    a) num > n => num = n
+    
+    b) num < -n => num = -n
+    
+## 2.2 - Sampling
 
-  * For β = 0.98 we are averaging the 50 recent values, as a result, it is a smooth graph compared to the graph of β = 0.9.
+Sampling the model is assuming that the model is trained and is ready to generate the next character and there by Indian name 
 
-  * Also, we can see a shift in β = 0.98 graph this is due to averaging against the large group of values with high weights and less weights to the current temperature, adaption becomes tough.
+when it is fed by an input character. Problem here would be only one name will be generated for one character. Here are the 
 
-  * For β = 0.9 we are averaging the latest 10 values, and as seen the blue graph tends to have reduced the noise.
+steps for sampling:
 
-  * For β = 0.5 we are averaging two recent values, due to which there is a lot of noise compared to both the previous values.
+      Step 01: Retrieve the parameters into respective variables, and initalize the x and a_prev
 
-In the conclusion, the exponentially weighted averages would allow us to tune one more hyperparameter β. Through this, we can put more weights on the 1/1-β number of recent values than the rest of the values. One thing to observe in the above graphs is how they all started from 0 and took some time to take over the average values, this phenomenon is called Bias Variance which I will explain in my next post.
+      Step 02: Calculate the a and y. 
+
+                Note: The vectors **x** and **a** are 2D not 1D.
+
+      Step 03: Sampling, the y which is a result of softmax probability vector. If the highest probability index is concerned 
+      
+      everytime there shall be a problem of having single name for a input character. For this case, we shall consider random function np.random.choice().
+
+      Step 04: Updating the x<t> with the values of x<t+1> by initalizing all the values to zero and 1 to idx index indicating one-hot vector of that character.
+
+
+## 2.3 - Optimizing the Model
+
+In this step we perform F.W.D propogation, B.W.D propogation, gradient Clipping and update the parameters
+
+      a) Perform F.W.D prop -> rnn_fwd_prop() method defined in utils
+
+      b) Perform B.W.D prop -> rnn_bck_prop() method defined in utils
+
+      c) Perform gradient clipping defined in step 2.1
+
+      d) Update the parameters -> update_parameters() method defined in utils
+
+## 2.4 - Training the Model
+
+
+a) In this we step we shall initialize the parameters -> Wax (n_x, n_a), Waa (n_a, n_a), Wya (n_y, n_a), b (n_a, 1), by(n_y, 1).
+
+b) Calculate the initial loss. This is to ensure that we give a smooth calculation at every step where loss is calculated.
+
+c) Prepare a list of dinosaurs name by stripping the '\n'. And shuffle this list.
+
+d) Initialize a_prev (n_a, 1) with zeros.
+
+e) Run the optimization loop over given number of iterations.
+
+    e.1) Retrieve each example & create a list of the char's in each example & map these char's to index using char_to_index.
+   
+    e.2) Initalize X to [None] + above create list of indices of the example.
+    
+    e.3) Initalize Y to indices list of example + char_to_index('\n').
+    
+    e.4) Optimize the values (F.W.D Prop -> B.W.D Prop -> Gradient_Clipping -> Update_Parameters)
+    
+    e.5) Perform sampling for every 2000 iterations to check if the model is training properly.
+    
+Code is available [here](https://github.com/kruthi-meghana/CharacterLevel-RNN-Model-IndianNames). The output after iterations are below:
+
+![Moving](/img/IndianNames-output.png) ![Moving](/img/IndianNames-output-02.png)
+
+![Moving](/img/IndianNames-output-03.png)
