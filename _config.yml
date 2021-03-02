@@ -24,7 +24,7 @@ description: Hi! This website has my work, projects, and other details about me.
 # List of links in the navigation bar
 navbar-links:
   About Me: "aboutme"
-  Projects: "projects"
+  Projects: "https://github.com/kruthi-meghana?tab=repositories"
 #  Resources:
 #    - Beautiful Jekyll: "http://deanattali.com/beautiful-jekyll/"
 #    - Learn markdown: "http://www.markdowntutorial.com/"
