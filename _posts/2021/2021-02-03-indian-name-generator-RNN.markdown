@@ -3,7 +3,7 @@ layout: post
 title: 'Character level - RNN - Model - Indian Names Generator'
 date: '2021-02-13 02:45'
 excerpt: >-
-  This is a demonstration of character level - recurrent neural networks. In this project we have trained the newural network with a dataset of Indian names and generated a new set of names.
+  This is a demonstration of character level - recurrent neural networks. In this project we have trained the neural network with a dataset of Indian names and generated a new set of names.
 comments: true
 ---
 
@@ -14,7 +14,7 @@ Given a set of Indian names create new names using character-level recurrent neu
 
 # Step 01 - Processing the data
 
-  * In this step we shall read the input words - Indian names as each setence with '\n' char at the end of each name we also create our vocabulary characters list
+  * In this step we shall read the input words - Indian names as each sentence with '\n' char at the end of each name we also create our vocabulary characters list
 
   * We need to maintain two hashtable char_to-index and index_to_char each of these are mappings of characters in vocabulary to an index and viceversa
  
